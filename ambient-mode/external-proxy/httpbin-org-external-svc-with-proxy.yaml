@@ -1,0 +1,65 @@
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+ name: waypoint
+ namespace: istio-system 
+ labels:
+    istio.io/waypoint-for: all
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
+    allowedRoutes:
+      namespaces:
+        from: All
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  annotations:
+  labels:
+    istio.io/use-waypoint: waypoint
+  name: www.httpbin.org
+  namespace: istio-system
+spec:
+  hosts:
+  - www.httpbin.org
+  ports:
+  - name: https
+    number: 443
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin-via-proxy
+  namespace: istio-system
+spec:
+  host: www.httpbin.org
+  trafficPolicy:
+    tunnel:
+      protocol: CONNECT
+      targetHost: www.httpbin.org
+      targetPort: 443
+
+# ---
+# apiVersion: security.istio.io/v1beta1
+# kind: AuthorizationPolicy
+# metadata:
+#   name: allow-httpbin-from-httpbin-client-sidecar
+#   namespace: istio-system
+# spec:
+#   targetRef:
+#     group: networking.istio.io
+#     kind: ServiceEntry
+#     name: www.httpbin.org
+#   action: ALLOW
+#   rules:
+#   - from:
+#     - source:
+#         principals: ["istio-ambient/ns/curl-client1/sa/curl-client1"]

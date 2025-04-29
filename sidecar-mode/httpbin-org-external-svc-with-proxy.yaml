@@ -1,0 +1,173 @@
+# Scenario : Route outbound connection to postman-echo.com from netshoot via egress and external proxy using istio api
+
+# Workload----https---->SideCar----https---->Egress---------https-----External_Proxy------>External_Service
+
+# External_Proxy here is a squid proxy reachable on address squid.kind from within the cluster, 
+# Below is an example request from a netshoot pod (note that curl does not specify a proxy) to https://postman-echo.com/ip
+
+# ╰─$ k exec -it netshoot-847bc77f76-qk72j --  curl  https://postman-echo.com/ip -k
+# {
+#   "ip": "47.20.213.132"
+# }
+
+# working config 
+
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: enable-mtls-strict
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+--- 
+
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-proxy
+  namespace: istio-system
+spec:
+  hosts:
+  - squid.kind
+  location: MESH_EXTERNAL
+  ports:
+  - number: 3128
+    name: tls
+    protocol: TLS
+  resolution: DNS
+
+--- 
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: postman
+  namespace: istio-system
+spec:
+  hosts:
+  - postman-echo.com
+  location: MESH_EXTERNAL
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: route-postman-via-egressgateway
+  namespace: istio-system
+spec:
+  hosts:
+  - postman-echo.com
+  gateways:
+  - postman
+  - mesh
+  tcp:
+  - match:
+    - gateways:
+      - postman
+      port: 443
+    route:
+    - destination:
+        subset: postman-via-proxy
+        host: squid.kind
+        port:
+          number: 3128
+      weight: 100
+  tls:
+  - match:
+    - gateways:
+      - mesh
+      port: 443
+      sniHosts:
+      - postman-echo.com
+    route:
+    - destination:
+        subset: postman-via-egress
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        port:
+          number: 443
+      weight: 100
+
+--- 
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: postman-via-proxy
+  namespace: istio-system
+spec:
+  host: squid.kind
+  subsets:
+  - name: postman-via-proxy
+    trafficPolicy:
+      tunnel:
+        protocol: CONNECT
+        targetHost: postman-echo.com
+        targetPort: 443
+
+--- 
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: postman-via-egress
+  namespace: istio-system
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: postman-via-egress
+    trafficPolicy:
+      tls:
+        mode: ISTIO_MUTUAL
+        sni: postman-echo.com
+
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: postman
+  namespace: istio-system
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 443
+      name: https #tls
+      protocol: TLS
+    hosts:
+    - postman-echo.com
+    tls:
+      mode: ISTIO_MUTUAL
+
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+ name: allow-nothing
+ namespace: istio-system
+spec:
+  {}
+
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-postman-from-netshoot
+  namespace: istio-system
+  # No ns means that applies to all ns in a mesh
+spec:
+  action: ALLOW
+  rules:
+  - when:
+    - key: connection.sni
+      values: 
+      - "postman-echo.com"
+    - key: source.principal
+      values: 
+      - "cluster.local/ns/default/sa/netshoot"
+

@@ -1,0 +1,41 @@
+#### Create a namespace curl-client1 , enable ambient mode and run a pod in it with a specific service account
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    # istio-injection: enabled
+    istio.io/dataplane-mode: ambient
+    istio.io/use-waypoint: waypoint
+    istio.io/use-waypoint-namespace: istio-system
+  name: curl-client1
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: curl-client1
+  namespace: curl-client1
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: shell
+    # istio.io/dataplane-mode: ambient
+    # istio.io/use-waypoint: waypoint
+    # istio.io/use-waypoint-namespace: istio-system
+  name: shell
+  namespace: curl-client1
+spec:
+  serviceAccountName: curl-client1
+  containers:
+  - command:
+    - sleep
+    - infinity
+    image: nicolaka/netshoot
+    imagePullPolicy: IfNotPresent
+    name: shell
+
