@@ -22,11 +22,11 @@ metadata:
   annotations:
   labels:
     istio.io/use-waypoint: waypoint
-  name: www.httpbin.org
+  name: wttr.in
   namespace: istio-system
 spec:
   hosts:
-  - www.httpbin.org
+  - wttr.in
   ports:
   - name: https
     number: 443
@@ -52,11 +52,11 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: TCPRoute
 metadata:
-  name: tcp-httpbin
+  name: tcp-wttr-in
   namespace: istio-system
 spec:
   parentRefs:
-  - name: www.httpbin.org
+  - name: wttr.in
     namespace: istio-system
     kind: ServiceEntry
     group: networking.istio.io
@@ -70,13 +70,13 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: httpbin-via-proxy
+  name: wttr-in-via-proxy
   namespace: istio-system
 spec:
   host: squid.kind
   trafficPolicy:
       tunnel:
         protocol: CONNECT
-        targetHost: www.httpbin.org
+        targetHost: wttr.in
         targetPort: 443
 
