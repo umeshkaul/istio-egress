@@ -1,5 +1,14 @@
 Having two service entries using external proxy does not work. As the test below shows the first SE (wttr.in in below example) works but the attempts to connect to second SE (httpbin.org in below example) end up being forwarded to first SE (wttr.in in below example)   
 
+- used external proxy for testing
+`docker run -d --rm --name netshoot --network kind nicolaka/netshoot:latest  sleep infinity`
+
+- manifests used for testing 
+```
+wttr-in-external-svc-with-proxy.yaml
+httpbin-org-external-svc-with-proxy.yaml  
+curl-client1.yaml  
+```
 
 ```
 
