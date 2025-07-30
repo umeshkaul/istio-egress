@@ -1,4 +1,9 @@
-## Below test creates two ServiceEntries each with its own proxy and then tries to curl them. The SE's are created for `wttr.in` and `www.httpbin.org` with each having its own SE for squid proxy. Curl tests below show that curl to wttr.in works fine but curl to www.httpbin.org gets redirected to wttr.in
+#### Below test creates two ServiceEntries each with its own proxy and then tries to curl them.  
+- The SE's are created for `wttr.in` and `www.httpbin.org` with each having its own SE for squid proxy.  
+- Curl tests below show that curl to wttr.in works fine but curl to `www.httpbin.org` gets redirected to `wttr.in`  
+
+
+#### Test Log
 
 - Apply wttr.in manifests with its own SE for squid proxy 
 
