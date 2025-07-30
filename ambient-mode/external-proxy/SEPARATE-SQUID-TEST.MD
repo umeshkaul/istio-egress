@@ -76,6 +76,7 @@ istio-system   destinationrule.networking.istio.io/wttr-in-via-proxy   squid.kin
 
 ```
 # test wttr - works fine
+
 [shambu]ukaul in ~/Projects/istio-egress/ambient-mode/external-proxy on main ● ● λ k -n curl-client1 exec -it shell -- curl -s 'https://wttr.in/{NewYork,NewDelhi}?format=3'
 NewYork: ☀️   +71°F
 NewDelhi: 🌧   +77°F
@@ -86,8 +87,12 @@ NewDelhi: 🌧   +77°F
 # istio log
 ztunnel-bd6r8 istio-proxy 2025-06-20T14:22:26.137598Z   info    access  connection complete     src.addr=10.244.0.11:47396 src.workload="shell" src.namespace="curl-client1" src.identity="spiffe://cluster.local/ns/curl-client1/sa/curl-client1" dst.addr=10.244.0.42:15008 dst.hbone_addr=240.240.0.88:443 dst.service="wttr.in" dst.workload="waypoint-dd5c9497f-xknp9" dst.namespace="istio-system" dst.identity="spiffe://cluster.local/ns/istio-system/sa/waypoint" direction="outbound" bytes_sent=848 bytes_recv=3622 duration="1150ms"
 waypoint-dd5c9497f-xknp9 istio-proxy [2025-06-20T14:22:24.987Z] "- - -" 0 - - - "-" 848 3622 1149 - "-" "-" "-" "-" "192.168.132.3:3128" outbound|3128||squid.kind 10.244.0.42:33054 240.240.0.88:443 10.244.0.11:42462 - -
+```
 
-# test httpbin - as you can see it is redirected to httpbin
+
+# test httpbin - as you can see it is redirected to wttr
+
+```
 [shambu]ukaul in ~/Projects/istio-egress/ambient-mode/external-proxy on main ● λ k -n curl-client1 exec -it shell -- curl https://www.httpbin.org/ip
 curl: (60) SSL: no alternative certificate subject name matches target host name 'www.httpbin.org'
 More details here: https://curl.se/docs/sslcerts.html
