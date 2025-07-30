@@ -1,6 +1,6 @@
-## Test separate SE for squid proxy
+## Below test creates two ServiceEntries each with its own proxy and then tries to curl them. The SE's are created for `wttr.in` and `www.httpbin.org` with each having its own SE for squid proxy. Curl tests below show that curl to wttr.in works fine but curl to www.httpbin.org gets redirected to wttr.in
 
-- Apply wttr manifests with its own SE for squid proxy 
+- Apply wttr.in manifests with its own SE for squid proxy 
 
 ```
 # apply wttr manifests
@@ -38,7 +38,6 @@ NewDelhi: 🌧   +77°F
 ztunnel-bd6r8 istio-proxy 2025-06-20T14:11:35.328438Z    info    access    connection complete    src.addr=10.244.0.11:35964 src.workload="shell" src.namespace="curl-client1" src.identity="spiffe://cluster.local/ns/curl-client1/sa/curl-client1" dst.addr=10.244.0.42:15008 dst.hbone_addr=240.240.0.88:443 dst.service="wttr.in" dst.workload="waypoint-dd5c9497f-xknp9" dst.namespace="istio-system" dst.identity="spiffe://cluster.local/ns/istio-system/sa/waypoint" direction="outbound" bytes_sent=848 bytes_recv=3622 duration="452ms"
 waypoint-dd5c9497f-xknp9 istio-proxy [2025-06-20T14:11:34.876Z] "- - -" 0 - - - "-" 848 3622 451 - "-" "-" "-" "-" "192.168.132.3:3128" outbound|3128||squid.kind 10.244.0.42:38432 240.240.0.88:443 10.244.0.11:42462 - -
 
-
 ```
 
 - Apply httpbin  manifests with its own SE for squid proxy
@@ -72,7 +71,7 @@ istio-system   destinationrule.networking.istio.io/wttr-in-via-proxy   squid.kin
 
 ```
 
-- Test wttr again and then httpbin
+- Test wttr.in - it works
 
 ```
 # test wttr - works fine
@@ -90,10 +89,10 @@ waypoint-dd5c9497f-xknp9 istio-proxy [2025-06-20T14:22:24.987Z] "- - -" 0 - - - 
 ```
 
 
-# test httpbin - as you can see it is redirected to wttr
+- Test www.httpbin.org - does NOT work - it is redirected to wttr.in
 
 ```
-[shambu]ukaul in ~/Projects/istio-egress/ambient-mode/external-proxy on main ● λ k -n curl-client1 exec -it shell -- curl https://www.httpbin.org/ip
+λ k -n curl-client1 exec -it shell -- curl https://www.httpbin.org/ip
 curl: (60) SSL: no alternative certificate subject name matches target host name 'www.httpbin.org'
 More details here: https://curl.se/docs/sslcerts.html
 
