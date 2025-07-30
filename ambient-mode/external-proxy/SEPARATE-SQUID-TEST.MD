@@ -76,7 +76,7 @@ istio-system   destinationrule.networking.istio.io/wttr-in-via-proxy   squid.kin
 
 ```
 
-- Test wttr.in - it works
+- Test `wttr.in` - it works fine
 
 ```
 # test wttr - works fine
@@ -94,7 +94,7 @@ waypoint-dd5c9497f-xknp9 istio-proxy [2025-06-20T14:22:24.987Z] "- - -" 0 - - - 
 ```
 
 
-- Test www.httpbin.org - does NOT work - it is redirected to wttr.in
+- Test `www.httpbin.org` - does NOT work - it is redirected to wttr.in
 
 ```
 λ k -n curl-client1 exec -it shell -- curl https://www.httpbin.org/ip
