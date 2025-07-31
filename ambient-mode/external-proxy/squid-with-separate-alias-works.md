@@ -1,3 +1,5 @@
+- having separate alias for same squid proxy works, see config and logs below
+
 ```
 $>cat docker-compose.yaml
 version: '3.8'
