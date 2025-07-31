@@ -41,7 +41,7 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
-  - squid.kind
+  - squid2.kind
   ports:
   - name: https
     number: 3128
@@ -62,7 +62,7 @@ spec:
     group: networking.istio.io
   rules:
   - backendRefs:
-    - name: squid.kind
+    - name: squid2.kind
       kind: Hostname
       port: 3128
       group: networking.istio.io
@@ -73,7 +73,7 @@ metadata:
   name: httpbin-via-proxy
   namespace: istio-system
 spec:
-  host: squid.kind
+  host: squid2.kind
   trafficPolicy:
       tunnel:
         protocol: CONNECT
